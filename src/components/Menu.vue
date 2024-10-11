@@ -4,28 +4,28 @@
     class="sidebar-menu"
     @select="handleSelect"
   >
-    <el-menu-item index="1">个人信息</el-menu-item>
-    <el-menu-item index="2">视频管理</el-menu-item>
-    <el-menu-item index="3">目录管理</el-menu-item>
-    <el-menu-item index="4">商品管理</el-menu-item>
+    <el-menu-item index="/">个人信息</el-menu-item>
+    <el-menu-item index="/video">视频管理</el-menu-item>
+    <el-menu-item index="/category">目录管理</el-menu-item>
+    <el-menu-item index="/product">商品管理</el-menu-item>
   </el-menu>
 </template>
 
 <script>
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   setup() {
-    const activeMenu = ref('1') // 当前激活的菜单项
+    const activeMenu = ref('/')
+    const router = useRouter()
 
     const handleSelect = index => {
-      activeMenu.value = index // 更新激活菜单项
-      console.log(`选择的菜单项: ${index}`)
-      // 这里可以添加导航逻辑
+      activeMenu.value = index
     }
 
-    // 监听 activeMenu 的变化
     watch(activeMenu, newIndex => {
+      router.push(newIndex)
       console.log(`当前选择的菜单项: ${newIndex}`)
     })
 
