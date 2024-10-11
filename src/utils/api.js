@@ -1,4 +1,5 @@
-import { get, post } from '@/utils/request'
+import { get, post, put, del } from '@/utils/request'
 const baseUrl = 'http://localhost:8888'
 
-export const login = p => post(baseUrl + '/backstage/login', p)
+export const getUserInfo = p => get(baseUrl + '/user')
+export const updateUserInfo = (p, header) => put(baseUrl + '/user', p, header)

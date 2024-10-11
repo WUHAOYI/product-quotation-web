@@ -1,5 +1,9 @@
 <template>
-  <div class="container">
+  <div
+    class="container"
+    v-loading="loading"
+    :element-loading-text="loadingText"
+  >
     <div>
       <form @submit.prevent="submitForm" class="profile-edit">
         <!-- 阻止默认提交行为 -->
@@ -44,22 +48,34 @@
 </template>
 
 <script>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import * as notification from '@/utils/notification'
+import { getUserInfo, updateUserInfo } from '@/utils/api'
 
 export default {
   setup() {
-    const username = ref('John Doe') // 默认用户名
-    const isEditing = ref(false) // 编辑状态
+    const username = ref('') // 默认用户名
     const avatarUrl = ref(
-      'http://54.251.36.109:8888/1727770998579_test2024.png',
+      'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
     ) // 头像URL
     const avatarFile = ref(null) // 存储上传的文件
     const fileName = ref('') // 存储上传的文件名
+    const loading = ref(true) // 加载状态
+    const loadingText = ref('正在加载个人信息') // 加载文本
 
-    const handleBlur = () => {
-      isEditing.value = false
-    }
+    // 获取用户信息
+    onMounted(async () => {
+      try {
+        const res = await getUserInfo()
+        username.value = res.data.username
+        avatarUrl.value = res.data.avatar
+        notification.notifySuccess('加载个人信息成功', '')
+      } catch (error) {
+        notification.notifyError('加载个人信息失败', error)
+      } finally {
+        loading.value = false
+      }
+    })
 
     // 选择文件并更新头像预览
     const handleAvatarChange = event => {
@@ -87,28 +103,27 @@ export default {
       }
 
       try {
-        const response = await axios.put(
-          'http://54.251.36.109:8888/user',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data', // 设置请求头为表单数据类型
-            },
-          },
-        )
-        console.log('提交成功:', response.data)
+        loading.value = true
+        loadingText.value = '正在修改个人信息'
+        const res = await updateUserInfo(formData, {
+          'Content-Type': 'multipart/form-data', // 设置请求头为表单数据类型
+        })
+        notification.notifySuccess('修改个人信息成功', '')
       } catch (error) {
-        console.error('提交失败:', error)
+        notification.notifyError('修改个人信息失败', error)
+      } finally {
+        loading.value = false
+        loadingText.value = '正在加载个人信息'
       }
     }
 
     return {
       username,
-      isEditing,
       avatarUrl,
       avatarFile,
       fileName,
-      handleBlur,
+      loading,
+      loadingText,
       handleAvatarChange,
       selectFile,
       submitForm,
