@@ -27,11 +27,32 @@
           <div class="avatar-hint">点击上传头像</div>
         </div>
 
-        <div class="username-section">
-          <div>用户名：&nbsp;</div>
-          <el-input v-model="username" placeholder="输入用户名" required />
-        </div>
+        <div>
+          <div class="info-section">
+            <div>用户：&nbsp;</div>
+            <el-input v-model="username" placeholder="输入用户名" required />
+          </div>
 
+          <div class="info-section">
+            <div>电话：&nbsp;</div>
+            <el-input v-model="phone" placeholder="输入电话号码" required />
+          </div>
+
+          <div class="info-section">
+            <div>地址：&nbsp;</div>
+            <el-input v-model="location" placeholder="输入地址" required />
+          </div>
+
+          <div class="info-section">
+            <div>简介：&nbsp;</div>
+            <el-input
+              style="width: 400px"
+              v-model="intro"
+              placeholder="输入简介"
+              required
+            />
+          </div>
+        </div>
         <el-button
           type="primary"
           native-type="submit"
@@ -55,6 +76,10 @@ import { getUserInfo, updateUserInfo } from '@/utils/api'
 export default {
   setup() {
     const username = ref('') // 默认用户名
+    const phone = ref('') // 默认电话号码
+    const location = ref('') // 默认地址
+    const intro = ref('') // 默认简介
+
     const avatarUrl = ref(
       'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
     ) // 头像URL
@@ -69,6 +94,9 @@ export default {
         const res = await getUserInfo()
         username.value = res.data.username
         avatarUrl.value = res.data.avatar
+        phone.value = res.data.phone
+        location.value = res.data.location
+        intro.value = res.data.intro
         notification.notifySuccess('加载个人信息成功', '')
       } catch (error) {
         notification.notifyError('加载个人信息失败', error)
@@ -97,6 +125,10 @@ export default {
     const submitForm = async () => {
       const formData = new FormData()
       formData.append('username', username.value)
+      formData.append('phone', phone.value)
+      formData.append('location', location.value)
+      formData.append('intro', intro.value)
+
       if (avatarFile.value) {
         formData.append('avatarFile', avatarFile.value) // 添加上传的头像文件
         formData.append('fileName', fileName.value) // 添加上传的文件名
@@ -119,6 +151,9 @@ export default {
 
     return {
       username,
+      phone,
+      location,
+      intro,
       avatarUrl,
       avatarFile,
       fileName,
@@ -166,7 +201,7 @@ export default {
   margin-top: 10px;
   color: #999;
 }
-.username-section {
+.info-section {
   display: flex;
   align-items: center;
   margin-top: 30px;

@@ -5,9 +5,17 @@
     @select="handleSelect"
   >
     <el-menu-item index="/">个人信息</el-menu-item>
-    <el-menu-item index="/video">视频管理</el-menu-item>
+
+    <!-- 视频管理目录，包含子目录 -->
+    <el-sub-menu index="/video">
+      <template #title>视频管理</template>
+      <el-menu-item index="/video/upload">上传视频</el-menu-item>
+      <el-menu-item index="/video/list">视频列表</el-menu-item>
+    </el-sub-menu>
+
     <el-menu-item index="/category">目录管理</el-menu-item>
     <el-menu-item index="/product">商品管理</el-menu-item>
+    <el-menu-item index="/time">商品上新</el-menu-item>
   </el-menu>
 </template>
 

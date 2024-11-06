@@ -11,7 +11,19 @@ const router = createRouter({
     {
       path: '/video',
       name: 'video',
-      component: () => import('../views/Video.vue'),
+      redirect: '/video/upload',
+      children: [
+        {
+          path: 'upload',
+          name: 'video-upload',
+          component: () => import('../views/video/VideoUpload.vue'), // 上传视频页面组件
+        },
+        {
+          path: 'list',
+          name: 'video-list',
+          component: () => import('../views/video/VideoList.vue'), // 视频列表页面组件
+        },
+      ],
     },
 
     {
@@ -23,6 +35,11 @@ const router = createRouter({
       path: '/category',
       name: 'category',
       component: () => import('../views/Category.vue'),
+    },
+    {
+      path: '/time',
+      name: 'time',
+      component: () => import('../views/Time.vue'),
     },
   ],
 })
