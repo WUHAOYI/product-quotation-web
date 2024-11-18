@@ -36,6 +36,20 @@
         />
       </el-form-item>
 
+      <!-- 商品目录选择 -->
+      <el-form-item label="商品种类">
+        <el-cascader
+          v-model="productDetail.categoryPath"
+          :options="categoryOptions"
+          :props="categoryProps"
+          :show-all-levels="false"
+          clearable
+          change-on-select
+          placeholder="请选择商品目录"
+          @change="handleCategoryChange"
+        />
+      </el-form-item>
+
       <!-- 商品价格 -->
       <el-form-item label="商品最低价" v-if="productDetail.specs.length !== 0">
         <el-input v-model="productDetail.lowPrice" size="large" disabled />
@@ -254,6 +268,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as notification from '@/utils/notification'
 import {
+  getCategories,
   getProductById,
   updateProduct,
   deleteProductImage,
@@ -272,6 +287,15 @@ export default {
     const route = useRoute()
     const router = useRouter()
     const loading = ref(false)
+    const categoryData = ref([])
+    // 将商品目录数据转换为 cascader 组件所需的格式
+    const categoryOptions = ref([])
+    const categoryProps = ref({
+      value: 'id',
+      label: 'categoryName',
+      children: 'children',
+      disabled: node => !node.isLeaf,
+    })
     const avatarUrl = ref('') // 封面图URL
     const avatarFile = ref(null) // 存储上传的封面图文件
     const avatarFileName = ref('') // 存储上传的封面图文件名
@@ -289,11 +313,13 @@ export default {
       id: null,
       name: '',
       description: '',
+      categoryId: null,
       lowPrice: 0,
       images: [],
       specs: [],
       options: [],
       avatar: '', // 商品封面图字段
+      categoryPath: [], // 商品目录路径
     })
 
     // 返回商品列表
@@ -301,17 +327,33 @@ export default {
       router.push('/product/list')
     }
 
+    // 获取所有商品种类信息
+    const fetchCategories = async () => {
+      try {
+        const response = await getCategories()
+        if (response.code === 20004) {
+          categoryData.value = response.data
+          convertToCascaderOptions(categoryData.value, categoryOptions.value)
+          setCategoryPath(productDetail.value.categoryId, categoryOptions.value)
+        }
+      } catch (error) {
+        console.error('获取商品目录失败', error)
+      }
+    }
+
     // 获取商品详情
     const loadProductDetail = async () => {
       const productId = route.params.id
       try {
         loading.value = true
+        fetchCategories()
         const response = await getProductById(productId)
         if (response.code === 20012) {
           console.log(response.data)
           productDetail.value = response.data
           avatarUrl.value = productDetail.value.avatar
           handleMetrics(productDetail)
+          setCategoryPath(productDetail.value.categoryId, categoryOptions.value)
           notification.notifySuccess('获取商品详情成功', '')
         } else {
           notification.notifyError('获取商品详情失败', response.message)
@@ -331,6 +373,7 @@ export default {
       formData.append('productId', productDetail.value.id)
       formData.append('productName', productDetail.value.name)
       formData.append('productIntro', productDetail.value.description)
+      formData.append('categoryId', productDetail.value.categoryId)
       formData.append('productLowPrice', productDetail.value.lowPrice)
       formData.append('productHighPrice', productDetail.value.lowPrice)
 
@@ -689,6 +732,52 @@ export default {
       loadProductDetail()
     })
 
+    const convertToCascaderOptions = (data, options, level = 1) => {
+      data.forEach(item => {
+        const cascaderItem = {
+          id: item.id,
+          categoryName: item.categoryName,
+          isLeaf: level === 3 || (item.children && item.children.length !== 0),
+        }
+        if (item.children && item.children.length > 0 && level < 3) {
+          cascaderItem.children = []
+          convertToCascaderOptions(
+            item.children,
+            cascaderItem.children,
+            level + 1,
+          )
+        }
+        options.push(cascaderItem)
+      })
+    }
+
+    // 处理商品目录改变事件
+    const handleCategoryChange = value => {
+      if (value.length === 1) {
+      } else if (value.length === 2) {
+      } else if (value.length === 3) {
+        productDetail.value.categoryPath = value
+        productDetail.value.categoryId = value[2]
+      }
+    }
+
+    const findCategoryPath = (id, options) => {
+      for (const option of options) {
+        if (option.id === id) return [option.id]
+        if (option.children) {
+          const path = findCategoryPath(id, option.children)
+          if (path) return [option.id, ...path]
+        }
+      }
+      return null
+    }
+
+    const setCategoryPath = (id, options) => {
+      const path = findCategoryPath(id, options)
+      if (path) {
+        productDetail.value.categoryPath = path
+      }
+    }
     // 显示封面图文件选择框
     const selectAvatarFile = () => {
       const AvatarFileInput = document.querySelector('input[type="file"]') // 获取文件输入框
@@ -716,6 +805,8 @@ export default {
       loadingImageText,
       loadingSpecText,
       loadingOptText,
+      categoryOptions,
+      categoryProps,
       goBack,
       loadProductDetail,
       saveProductDetails,
@@ -732,6 +823,7 @@ export default {
       selectAvatarFile,
       handleAvatarChange,
       handleUpdateProductOption,
+      handleCategoryChange,
       avatarUrl,
     }
   },

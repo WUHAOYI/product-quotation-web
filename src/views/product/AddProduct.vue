@@ -389,7 +389,7 @@ export default {
       id: null,
       name: '',
       description: '',
-      categoryId: 6,
+      categoryId: null,
       lowPrice: 0,
       images: [],
       specs: [],
