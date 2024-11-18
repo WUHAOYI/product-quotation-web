@@ -2,7 +2,7 @@
   <div
     class="product-edit-container"
     v-loading="loading"
-    element-loading-text="正在加载商品详情"
+    :element-loading-text="loadingText"
   >
     <!--返回商品列表-->
     <el-button
@@ -40,6 +40,19 @@
         />
       </el-form-item>
 
+      <!-- 商品目录选择 -->
+      <el-form-item label="商品种类" prop="categoryPath">
+        <el-cascader
+          v-model="productDetail.categoryPath"
+          :options="categoryOptions"
+          :props="categoryProps"
+          :show-all-levels="false"
+          clearable
+          change-on-select
+          placeholder="请选择商品目录"
+          @change="handleCategoryChange"
+        />
+      </el-form-item>
       <!-- 商品价格 -->
       <el-form-item
         label="商品最低价"
@@ -318,6 +331,7 @@ import {
   updateProductOption,
   deleteProductOption,
   saveProductOptions,
+  getCategories,
 } from '@/utils/api'
 
 export default {
@@ -340,11 +354,24 @@ export default {
         },
       ],
       avatar: [
-        { required: true, message: '请上传商品封面图', trigger: 'blur' },
+        { required: true, message: '请上传商品封面图', trigger: 'change' },
+      ],
+      categoryPath: [
+        { required: true, message: '请选择商品种类', trigger: 'change' },
       ],
     })
     const router = useRouter()
     const loading = ref(false)
+    const loadingText = ref('正在加载数据')
+    const categoryData = ref([])
+    // 将商品目录数据转换为 cascader 组件所需的格式
+    const categoryOptions = ref([])
+    const categoryProps = ref({
+      value: 'id',
+      label: 'categoryName',
+      children: 'children',
+      disabled: node => !node.isLeaf,
+    })
     const avatarUrl = ref('') // 封面图URL
     const avatarFile = ref(null) // 存储上传的封面图文件
     const avatarFileName = ref('') // 存储上传的封面图文件名
@@ -362,16 +389,35 @@ export default {
       id: null,
       name: '',
       description: '',
+      categoryId: 6,
       lowPrice: 0,
       images: [],
       specs: [],
       options: [],
       avatar: '', // 商品封面图字段
+      categoryPath: [], // 商品目录路径
     })
 
     // 返回商品列表
     const goBack = () => {
       router.push('/product/list')
+    }
+
+    // 获取所有商品种类信息
+    const fetchCategories = async () => {
+      try {
+        loading.value = true
+        const response = await getCategories()
+        if (response.code === 20004) {
+          categoryData.value = response.data
+          convertToCascaderOptions(categoryData.value, categoryOptions.value)
+          setCategoryPath(productDetail.value.categoryId, categoryOptions.value)
+        }
+      } catch (error) {
+        console.error('获取商品目录失败', error)
+      } finally {
+        loading.value = false
+      }
     }
 
     // 获取商品详情
@@ -387,6 +433,7 @@ export default {
           notification.notifySuccess('获取商品详情成功', '')
           showAddButton.value = false
           showProductDetail.value = true
+          setCategoryPath(productDetail.value.categoryId, categoryOptions.value)
         } else {
           notification.notifyError('获取商品详情失败', response.message)
           console.error('获取商品详情失败')
@@ -401,14 +448,13 @@ export default {
 
     // 添加商品
     const handleAddProduct = async () => {
-      console.log(productForm.value)
       productForm.value.validate(async valid => {
         if (!valid) {
           return
         }
         const formData = new FormData()
         formData.append('productId', productDetail.value.id)
-        formData.append('categoryId', 10)
+        formData.append('categoryId', productDetail.value.categoryId)
         formData.append('productName', productDetail.value.name)
         formData.append('productIntro', productDetail.value.description)
         //初始增加商品时，商品价格为最低价
@@ -525,7 +571,6 @@ export default {
 
     // 删除商品详情图
     const removeProductImage = async image => {
-      console.log(image)
       let prefix = image.split(':')[0]
       if (prefix === 'blob') {
         productDetail.value.images = productDetail.value.images.filter(
@@ -534,7 +579,6 @@ export default {
         return
       }
       let imageName = image.split('/').pop()
-      console.log(imageName)
       try {
         loadingImage.value = true
         loadingImageText.value = '正在删除商品图片'
@@ -610,7 +654,6 @@ export default {
       })
       try {
         loadingSpec.value = true
-        console.log(productSpecs)
         const response = await saveProductSpecs({
           productSpecs: productSpecs,
         })
@@ -769,8 +812,55 @@ export default {
 
     // 初始化页面数据
     onMounted(() => {
-      console.log(productForm.value)
+      fetchCategories()
     })
+
+    const convertToCascaderOptions = (data, options, level = 1) => {
+      data.forEach(item => {
+        const cascaderItem = {
+          id: item.id,
+          categoryName: item.categoryName,
+          isLeaf: level === 3 || (item.children && item.children.length !== 0),
+        }
+        if (item.children && item.children.length > 0 && level < 3) {
+          cascaderItem.children = []
+          convertToCascaderOptions(
+            item.children,
+            cascaderItem.children,
+            level + 1,
+          )
+        }
+        options.push(cascaderItem)
+      })
+    }
+
+    // 处理商品目录改变事件
+    const handleCategoryChange = value => {
+      if (value.length === 1) {
+      } else if (value.length === 2) {
+      } else if (value.length === 3) {
+        productDetail.value.categoryPath = value
+        productDetail.value.categoryId = value[2]
+      }
+    }
+
+    const findCategoryPath = (id, options) => {
+      for (const option of options) {
+        if (option.id === id) return [option.id]
+        if (option.children) {
+          const path = findCategoryPath(id, option.children)
+          if (path) return [option.id, ...path]
+        }
+      }
+      return null
+    }
+
+    const setCategoryPath = (id, options) => {
+      const path = findCategoryPath(id, options)
+      if (path) {
+        productDetail.value.categoryPath = path
+      }
+    }
 
     // 显示封面图文件选择框
     const selectAvatarFile = () => {
@@ -795,7 +885,9 @@ export default {
       productRules,
       productForm,
       productDetail,
+      avatarUrl,
       loading,
+      loadingText,
       loadingDetail,
       loadingImage,
       loadingSpec,
@@ -804,6 +896,8 @@ export default {
       loadingImageText,
       loadingSpecText,
       loadingOptText,
+      categoryOptions,
+      categoryProps,
       goBack,
       handleAddProduct,
       handleProductImagesChange,
@@ -819,7 +913,7 @@ export default {
       selectAvatarFile,
       handleAvatarChange,
       handleUpdateProductOption,
-      avatarUrl,
+      handleCategoryChange,
     }
   },
 }
