@@ -94,8 +94,8 @@ import {
   ElFormItem,
   ElInput,
 } from 'element-plus'
-import { getProducts } from '@/utils/api'
-
+import { getProducts, deleteProductById } from '@/utils/api'
+import * as notification from '@/utils/notification'
 export default {
   name: 'ProductList',
   components: {
@@ -173,9 +173,22 @@ export default {
     }
 
     // 删除商品
-    const deleteProduct = productId => {
-      console.log('删除商品 ID:', productId)
-      // 在这里可以实现删除功能，例如调用删除接口
+    const deleteProduct = async productId => {
+      const confirm = window.confirm(
+        '该操作将会删除商品的所有数据，确认继续吗？',
+      )
+      if (!confirm) return
+      try {
+        const response = await deleteProductById(productId)
+        if (response.code === 20011) {
+          notification.notifySuccess('删除商品成功', '')
+          getProductList() // 删除成功后重新获取商品列表
+        } else {
+          notification.notifyError('删除商品失败', response.message)
+        }
+      } catch (error) {
+        notification.notifyError('删除商品失败:', error)
+      }
     }
 
     // 页面加载时获取商品数据

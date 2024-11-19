@@ -1,5 +1,5 @@
 import { get, post, put, del } from '@/utils/request'
-const baseUrl = 'http://localhost:8888'
+const baseUrl = 'http://47.121.176.15:8888'
 
 //个人信息
 export const getUserInfo = p => get(baseUrl + '/user')
