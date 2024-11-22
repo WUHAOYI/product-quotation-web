@@ -24,6 +24,14 @@
       <template #default="{ node, data }">
         <span>{{ data.categoryName }}</span>
         <div class="button-action">
+          <!-- 新增按钮 -->
+          <el-button
+            size="small"
+            type="primary"
+            v-if="data.categoryLevel < 3"
+            @click.stop="openChildAddDialog(data)"
+            >新增</el-button
+          >
           <el-button
             size="small"
             type="success"
@@ -228,12 +236,20 @@ export default {
       dialogVisible.value = true
     }
 
+    // 打开子级目录新增弹窗
+    const openChildAddDialog = data => {
+      resetDialog()
+      formData.superiorId = data.id
+      formData.level = data.categoryLevel + 1
+      dialogVisible.value = true
+    }
+
     // 打开编辑弹窗
     const openEditDialog = data => {
-      console.log(data)
       formData.id = data.id
       formData.name = data.categoryName
       formData.level = data.categoryLevel
+      formData.superiorId = data.superiorId
       dialogVisible.value = true
     }
 
@@ -375,6 +391,7 @@ export default {
       filteredDirectories,
       handleNodeClick,
       openAddDialog,
+      openChildAddDialog,
       openEditDialog,
       resetDialog,
       saveDirectory,

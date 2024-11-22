@@ -11,6 +11,17 @@
       @click="goBack"
       >返回商品列表</el-button
     >
+    <el-button
+      type="primary"
+      style="
+        width: 120px;
+        align-self: flex-start;
+        margin-left: 30px;
+        margin-top: 30px;
+      "
+      @click="refresh"
+      >保存</el-button
+    >
 
     <h2 class="product-title">商品详情信息:</h2>
     <!-- 商品详情表单 -->
@@ -389,7 +400,7 @@ export default {
       id: null,
       name: '',
       description: '',
-      categoryId: null,
+      categoryId: 6,
       lowPrice: 0,
       images: [],
       specs: [],
@@ -403,6 +414,12 @@ export default {
       router.push('/product/list')
     }
 
+    // 刷新页面
+    const refresh = () => {
+      notification.notifySuccess('开始添加下一个商品', '')
+      location.reload()
+    }
+
     // 获取所有商品种类信息
     const fetchCategories = async () => {
       try {
@@ -411,7 +428,20 @@ export default {
         if (response.code === 20004) {
           categoryData.value = response.data
           convertToCascaderOptions(categoryData.value, categoryOptions.value)
-          setCategoryPath(productDetail.value.categoryId, categoryOptions.value)
+          const cache = localStorage.getItem('categoryId')
+          if (cache) {
+            console.log('use cached category id')
+            productDetail.value.categoryId = parseInt(cache)
+            setCategoryPath(
+              productDetail.value.categoryId,
+              categoryOptions.value,
+            )
+          } else {
+            setCategoryPath(
+              productDetail.value.categoryId,
+              categoryOptions.value,
+            )
+          }
         }
       } catch (error) {
         console.error('获取商品目录失败', error)
@@ -471,6 +501,8 @@ export default {
             'Content-Type': 'multipart/form-data', // 设置请求头为表单数据类型
           })
           if (response.code === 20009) {
+            //本地缓存商品种类id
+            localStorage.setItem('categoryId', productDetail.value.categoryId)
             notification.notifySuccess('商品添加成功', '')
             console.log('商品添加成功')
             loadProductDetail(response.data.productId)
@@ -899,6 +931,7 @@ export default {
       categoryOptions,
       categoryProps,
       goBack,
+      refresh,
       handleAddProduct,
       handleProductImagesChange,
       handleSaveProductImages,

@@ -31,7 +31,14 @@
         </div>
 
         <div class="info-section">
-          <el-input v-model="videoTitle" placeholder="输入视频名称" required />
+          <el-input
+            style="width: 300px"
+            :rows="5"
+            type="textarea"
+            v-model="videoTitle"
+            placeholder="输入视频简介"
+            required
+          />
         </div>
 
         <el-button
@@ -73,7 +80,7 @@ export default {
         } else {
           videoFile.value = file // 存储上传的文件
           videoName.value = file.name // 获取文件名称
-          videoTitle.value = file.name.split('.')[0] // 默认视频名称为文件名
+          // videoTitle.value = file.name.split('.')[0] // 默认视频名称为文件名
           videoUrl.value = URL.createObjectURL(file) // 生成视频的临时 URL 用于预览
           videoError.value = '' // 清除错误信息
         }

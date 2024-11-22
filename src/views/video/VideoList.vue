@@ -5,7 +5,7 @@
     :element-loading-text="loadingText"
   >
     <el-table :data="videoList" style="width: 100%" stripe v-if="!loading">
-      <el-table-column label="视频名称" prop="videoName"></el-table-column>
+      <el-table-column label="视频简介" prop="videoName"></el-table-column>
       <el-table-column label="视频链接">
         <template #default="{ row }">
           <div v-html="formatUrl(row, null, row.videoLink)"></div>
@@ -61,8 +61,15 @@ export default {
       try {
         loading.value = true
         const res = await getVideoList({ page, size: pageSize.value })
-        videoList.value = res.data.videos
-        totalVideos.value = res.data.total
+        if (res.code === 40002) {
+          notification.notifyWarning('视频列表为空', '')
+        } else if (res.code !== 20002) {
+          notification.notifySuccess('加载视频成功', '')
+          videoList.value = res.data.videos
+          totalVideos.value = res.data.total
+        } else {
+          notification.notifyError('加载视频列表失败', res.message)
+        }
       } catch (error) {
         notification.notifyError('加载视频列表失败', error)
       } finally {
