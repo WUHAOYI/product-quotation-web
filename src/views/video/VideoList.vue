@@ -63,7 +63,7 @@ export default {
         const res = await getVideoList({ page, size: pageSize.value })
         if (res.code === 40002) {
           notification.notifyWarning('视频列表为空', '')
-        } else if (res.code !== 20002) {
+        } else if (res.code === 20002) {
           notification.notifySuccess('加载视频成功', '')
           videoList.value = res.data.videos
           totalVideos.value = res.data.total
