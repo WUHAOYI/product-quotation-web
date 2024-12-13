@@ -1,15 +1,42 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { RouterView } from 'vue-router'
 import Menu from '@/components/Menu.vue'
+
+const route = useRoute()
+const router = useRouter()
 
 const state = reactive({
   isLoggedIn: false,
 })
 
+onMounted(() => {
+  const storedIsLoggedIn = localStorage.getItem('isLoggedIn')
+  if (storedIsLoggedIn === 'true') {
+    state.isLoggedIn = true
+  }
+})
+
 function handleLoginSuccess() {
   state.isLoggedIn = true
+  localStorage.setItem('isLoggedIn', 'true')
 }
+
+function clearCacheAndLogout() {
+  state.isLoggedIn = false
+  localStorage.removeItem('isLoggedIn')
+}
+
+watch(
+  route,
+  newRoute => {
+    if (newRoute.path === '/') {
+      clearCacheAndLogout()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
