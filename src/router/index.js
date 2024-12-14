@@ -48,6 +48,11 @@ const router = createRouter({
           component: () => import('../views/product/AddProduct.vue'), //添加商品页面组件
         },
         {
+          path: 'add/batch',
+          name: 'product-add-batch',
+          component: () => import('../views/product/AddProductBatch.vue'), //批量添加商品页面组件
+        },
+        {
           path: 'edit/:id',
           name: 'product-edit',
           component: () => import('../views/product/EditProduct.vue'), //编辑商品页面组件

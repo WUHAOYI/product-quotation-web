@@ -9,6 +9,7 @@ const router = useRouter()
 
 const state = reactive({
   isLoggedIn: false,
+  initialLoad: true, // 添加初始加载标志
 })
 
 onMounted(() => {
@@ -16,6 +17,28 @@ onMounted(() => {
   if (storedIsLoggedIn === 'true') {
     state.isLoggedIn = true
   }
+
+  // 确保 onMounted 中的代码执行
+  console.log('onMounted executed, storedIsLoggedIn:', storedIsLoggedIn)
+
+  // 监听路由变化
+  watch(
+    () => route.path,
+    newRoute => {
+      // 在初始加载完成后才检查路径
+      if (!state.initialLoad) {
+        console.log('Route changed to:', newRoute)
+        if (newRoute === '/') {
+          console.log('clear cache and logout')
+          clearCacheAndLogout()
+        }
+      }
+    },
+    { immediate: true },
+  )
+
+  // 初始加载完成
+  state.initialLoad = false
 })
 
 function handleLoginSuccess() {
@@ -27,22 +50,11 @@ function clearCacheAndLogout() {
   state.isLoggedIn = false
   localStorage.removeItem('isLoggedIn')
 }
-
-watch(
-  route,
-  newRoute => {
-    if (newRoute.path === '/') {
-      clearCacheAndLogout()
-    }
-  },
-  { immediate: true },
-)
 </script>
 
 <template>
+  <Menu v-if="state.isLoggedIn" />
   <div id="app">
-    <Menu v-if="state.isLoggedIn" />
-
     <RouterView @login-success="handleLoginSuccess" />
   </div>
 </template>

@@ -4,7 +4,7 @@
     class="sidebar-menu"
     @select="handleSelect"
   >
-    <el-menu-item index="/">个人信息</el-menu-item>
+    <el-menu-item index="/info">个人信息</el-menu-item>
 
     <!-- 视频管理目录，包含子目录 -->
     <el-sub-menu index="/video">
@@ -22,6 +22,7 @@
       <template #title>商品管理</template>
       <el-menu-item index="/product/list">商品列表</el-menu-item>
       <el-menu-item index="/product/add">上传商品</el-menu-item>
+      <el-menu-item index="/product/add/batch">批量上传</el-menu-item>
     </el-sub-menu>
     <el-menu-item index="/time">商品上新</el-menu-item>
   </el-menu>
