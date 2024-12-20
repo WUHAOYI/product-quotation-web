@@ -12,6 +12,10 @@ const state = reactive({
   initialLoad: true, // 添加初始加载标志
 })
 
+function shouldShowMenu() {
+  return state.isLoggedIn && route.path !== '/'
+}
+
 onMounted(() => {
   const storedIsLoggedIn = localStorage.getItem('isLoggedIn')
   if (storedIsLoggedIn === 'true') {
@@ -53,7 +57,7 @@ function clearCacheAndLogout() {
 </script>
 
 <template>
-  <Menu v-if="state.isLoggedIn" />
+  <Menu v-if="shouldShowMenu()" />
   <div id="app">
     <RouterView @login-success="handleLoginSuccess" />
   </div>

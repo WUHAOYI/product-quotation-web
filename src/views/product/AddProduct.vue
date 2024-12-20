@@ -958,6 +958,9 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 20px;
+  position: absolute;
+  top: 10%;
+  left: 10%;
 }
 .product-title {
   align-self: flex-start;
