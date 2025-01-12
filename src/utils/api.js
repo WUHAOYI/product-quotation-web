@@ -42,3 +42,12 @@ export const updateProductOption = (p, header) =>
 export const deleteProductOption = p => del(baseUrl + '/product/option', p) //删除商品自定义选项
 export const saveProductOptions = (p, header) =>
   post(baseUrl + '/product/option', p, header) //添加商品自定义选项
+
+//授权
+export const getAllowedUser = p => get(baseUrl + '/user/allowedUser', p)
+export const getAllowedUserByUsername = p =>
+  get(baseUrl + '/user/allowedUser/' + p)
+export const addAllowedUser = p => post(baseUrl + '/user/allowedUser', p)
+export const addAllowedUserBatch = p =>
+  post(baseUrl + '/user/allowedUserList', p)
+export const deleteAllowedUser = p => del(baseUrl + '/user/allowedUser/' + p)

@@ -71,10 +71,23 @@ const router = createRouter({
         },
       ],
     },
+    //上新
     {
       path: '/time',
       name: 'time',
       component: () => import('../views/Time.vue'),
+    },
+    //授权
+    {
+      path: '/allowUser',
+      name: 'allowUser',
+      component: () => import('../views/AllowUser.vue'),
+    },
+    //批量授权
+    {
+      path: '/allowUser/batch',
+      name: 'allowUser-batch',
+      component: () => import('../views/AllowUserBatch.vue'),
     },
   ],
 })

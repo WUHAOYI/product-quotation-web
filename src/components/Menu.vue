@@ -25,6 +25,8 @@
       <el-menu-item index="/product/add/batch">批量上传</el-menu-item>
     </el-sub-menu>
     <el-menu-item index="/time">商品上新</el-menu-item>
+    <el-menu-item index="/allowUser">用户授权</el-menu-item>
+    <el-menu-item index="/allowUser/batch">批量授权</el-menu-item>
   </el-menu>
 </template>
 
